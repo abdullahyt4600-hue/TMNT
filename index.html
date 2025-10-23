@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TMNT AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-dark: rgba(15, 15, 15, 0.85);
+      --glass: rgba(40, 40, 40, 0.6);
+      --teal: #10a37f;
+      --teal-light: #12c198;
+    }
+    body {
+      background: linear-gradient(135deg, #050505, #1c1c1c);
+      font-family: "Inter", sans-serif;
+      color: #f4f4f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      backdrop-filter: blur(10px);
+    }
+    .chat-wrapper {
+      width: 100%;
+      max-width: 900px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    }
+    .header {
+      backdrop-filter: blur(10px);
+      background: rgba(30, 30, 30, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    select {
+      background: rgba(50, 50, 50, 0.8);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.4rem 0.6rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .summary-btn {
+      background: var(--teal);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.5rem 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .summary-btn:hover {
+      background: var(--teal-light);
+      transform: scale(1.05);
+    }
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      scrollbar-width: thin;
+    }
+    .user, .ai {
+      max-width: 80%;
+      padding: 0.9rem 1.2rem;
+      border-radius: 16px;
+      line-height: 1.5;
+      word-wrap: break-word;
+      animation: fadeIn 0.3s ease;
+    }
+    .user {
+      background: var(--teal);
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .ai {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e5e5e5;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .chat-input {
+      padding: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(25, 25, 25, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      backdrop-filter: blur(10px);
+    }
+    .input-box {
+      flex: 1;
+      background: rgba(40, 40, 40, 0.8);
+      border: none;
+      border-radius: 12px;
+      padding: 0.8rem 1rem;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e5e5e5;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .icon-btn:hover {
+      background: var(--teal);
+      color: #fff;
+      transform: scale(1.1);
+    }
+    .dots {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.6rem 1rem;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      width: fit-content;
+    }
+    .dot {
+      width: 8px; height: 8px; background: #a1a1aa; border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-wrapper">
+    <div class="header">
+      <h1>🧠 TMNT AI</h1>
+      <div class="flex items-center gap-2">
+        <select id="lang" onchange="switchLang()">
+          <option value="English" selected>English 🇬🇧</option>
+          <option value="Urdu">Urdu 🇵🇰</option>
+        </select>
+        <button class="summary-btn" onclick="summarize()">✨ Summarize</button>
+      </div>
+    </div>
+    <div id="chat-body" class="chat-body">
+      <div class="ai">Hello! I’m TMNT AI. How can I help you today?</div>
+    </div>
+    <div class="chat-input">
+      <button id="voice-btn" class="icon-btn" title="Voice">🎙️</button>
+      <label for="img" class="icon-btn" title="Attach file" style="font-size: 1.3rem; line-height: 1;">📎</label>
+      <input id="img" type="file" accept="image/*" class="hidden" />
+      <input id="msg" class="input-box" type="text" placeholder="Type a message…" />
+      <button class="icon-btn" title="Send" onclick="send()">📤</button>
+    </div>
+  </div>
+
+  <script>
+    const chatBody = document.getElementById("chat-body");
+    const msgInput = document.getElementById("msg");
+    const imgInput = document.getElementById("img");
+    const langSelect = document.getElementById("lang");
+    const voiceBtn = document.getElementById("voice-btn");
+    const apiKey = "AIzaSyANG7LfjHln4LW2_RxVvN0ZC6hy5FdOySY";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+    let chatHistory = [];
+    let currentLang = "English";
+
+    msgInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
+    });
+
+    function appendMessage(text, cls) {
+      const div = document.createElement("div");
+      div.className = cls;
+      div.innerHTML = text;
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function loader() {
+      const dots = document.createElement("div");
+      dots.className = "dots";
+      dots.id = "dots";
+      dots.innerHTML = "<div class='dot'></div><div class='dot'></div><div class='dot'></div>";
+      chatBody.appendChild(dots);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+    function stopLoader() {
+      const l = document.getElementById("dots");
+      if (l) l.remove();
+    }
+
+    imgInput.addEventListener("change", () => {
+      const file = imgInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        appendMessage(`<img src="${e.target.result}" class="rounded-lg max-w-[200px]"/>`, "user");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function send() {
+      const text = msgInput.value.trim();
+      if (!text) return;
+      appendMessage(text, "user");
+      msgInput.value = "";
+      loader();
+
+      const sysPrompt =
+        currentLang === "English"
+          ? "You are TMNT AI, a smart helpful assistant. Reply in English naturally."
+          : "آپ TMNT AI ہیں، ایک مددگار اور ذہین اسسٹنٹ۔ جوابات اردو میں دیں۔";
+
+      const payload = {
+        contents: [...chatHistory, { role: "user", parts: [{ text }] }],
+        system_instruction: { parts: [{ text: sysPrompt }] },
+      };
+
+      try {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        stopLoader();
+        const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "⚠️ No response.";
+        appendMessage(aiText, "ai");
+        chatHistory.push({ role: "user", parts: [{ text }] });
+        chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+      } catch (e) {
+        stopLoader();
+        appendMessage("⚠️ Connection error.", "ai");
+      }
+    }
+
+    async function summarize() {
+      if (chatHistory.length < 2) return;
+      loader();
+      const prompt =
+        currentLang === "English"
+          ? "Summarize this conversation briefly in bullet points."
+          : "براہ کرم اس گفتگو کا خلاصہ مختصر نکات میں لکھیں۔";
+      const payload = {
+        contents: [...chatHistory, { role: "user", parts: [{ text: prompt }] }],
+      };
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      stopLoader();
+      const sum = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Couldn’t summarize.";
+      appendMessage(sum, "ai");
+    }
+
+    function switchLang() {
+      currentLang = langSelect.value;
+      appendMessage(
+        currentLang === "English"
+          ? "Language switched to English 🇬🇧."
+          : "زبان اردو 🇵🇰 میں تبدیل کر دی گئی ہے۔",
+        "ai"
+      );
+    }
+
+    // Voice recognition setup
+    if ("webkitSpeechRecognition" in window) {
+      const recognition = new webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      voiceBtn.addEventListener("click", () => {
+        recognition.lang = currentLang === "English" ? "en-US" : "ur-PK";
+        recognition.start();
+        voiceBtn.style.background = "var(--teal)";
+        voiceBtn.style.color = "#fff";
+      });
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        msgInput.value = transcript;
+        recognition.stop();
+        voiceBtn.style.background = "rgba(255,255,255,0.05)";
+        voiceBtn.style.color = "#e5e5e5";
+      };
+
+      recognition.onend = () => {
+        voiceBtn.style.background = "rgba(255,255,255,0.05)";
+        voiceBtn.style.color = "#e5e5e5";
+      };
+
+      recognition.onerror = () => {
+        voiceBtn.style.background = "rgba(255,255,255,0.05)";
+        voiceBtn.style.color = "#e5e5e5";
+        alert("Speech recognition error or not supported.");
+      };
+    } else {
+      voiceBtn.disabled = true;
+      voiceBtn.title = "Speech recognition not supported in this browser";
+    }
+  </script>
+</body>
+</html>
