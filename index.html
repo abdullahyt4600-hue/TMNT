@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TMNT AI</title>
+  <title>ChatGPT AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
@@ -167,7 +167,7 @@
 <body>
   <div class="chat-wrapper">
     <div class="header">
-      <h1>🧠 TMNT AI</h1>
+      <h1>🧠 ChatGPT</h1>
       <div class="flex items-center gap-2">
         <select id="lang" onchange="switchLang()">
           <option value="English" selected>English 🇬🇧</option>
@@ -177,7 +177,7 @@
       </div>
     </div>
     <div id="chat-body" class="chat-body">
-      <div class="ai">Hello! I’m TMNT AI. How can I help you today?</div>
+      <div class="ai">Hello! I’m ChatGPT. How can I help you today?</div>
     </div>
     <div class="chat-input">
       <button id="voice-btn" class="icon-btn" title="Voice">🎙️</button>
@@ -246,8 +246,8 @@
 
       const sysPrompt =
         currentLang === "English"
-          ? "You are TMNT AI, a smart helpful assistant. Reply in English naturally."
-          : "آپ TMNT AI ہیں، ایک مددگار اور ذہین اسسٹنٹ۔ جوابات اردو میں دیں۔";
+          ? "You are ChatGPT, a smart helpful assistant. Reply in English naturally."
+          : "آپ ChatGPT ہیں، ایک مددگار اور ذہین اسسٹنٹ۔ جوابات اردو میں دیں۔";
 
       const payload = {
         contents: [...chatHistory, { role: "user", parts: [{ text }] }],
